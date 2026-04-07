@@ -1,0 +1,42 @@
+name: Fill Uttara Kanda Translations
+
+on:
+  schedule:
+    - cron: "0 3 * * *"   # 3 AM UTC daily (8:30 AM IST)
+  workflow_dispatch:        # allow manual trigger from GitHub UI
+
+permissions:
+  contents: write           # needed to commit back to the repo
+
+jobs:
+  translate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout auto-translations branch
+        uses: actions/checkout@v4
+        with:
+          ref: auto-translations
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run translation script
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: python fill_translations.py
+
+      - name: Commit and push if changes were made
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/Valmiki_Ramayan_Shlokas.json
+          git diff --staged --quiet \
+            && echo "No changes to commit — all done or nothing filled today." \
+            || git commit -m "auto: fill Uttara Kanda translations (daily batch)"
+          git push origin auto-translations
