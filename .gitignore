@@ -13,5 +13,10 @@ Thumbs.db
 
 # Ignore virtual environments (Python)
 venv/
+.venv/
 __pycache__/
 *.pyc
+
+# Ignore local environment / secrets
+.env
+*.env
